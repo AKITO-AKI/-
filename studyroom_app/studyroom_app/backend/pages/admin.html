@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>管理</title>
+  <link rel="stylesheet" href="/static/style.css"/>
+</head>
+<body>
+  <div class="wrap">
+    <header class="row between">
+      <h1>管理</h1>
+      <nav class="muted"><a href="/">ホーム</a></nav>
+    </header>
+
+    <div class="card" id="login_card">
+      <h2>管理ログイン</h2>
+      <label>管理パスワード<input id="admin_pw" type="password" placeholder="STUDYROOM_ADMIN_PASSWORD"/></label>
+      <button class="primary" id="admin_login">ログイン</button>
+      <p class="muted" id="login_msg"></p>
+    </div>
+
+    <div id="admin_area" style="display:none;">
+      <div class="grid2">
+        <div class="card">
+          <h2>ユーザー追加</h2>
+          <label>学籍番号<input id="c_student"/></label>
+          <label>氏名<input id="c_name"/></label>
+          <label>表示名（ランキング）<input id="c_nick"/></label>
+          <label>初期PIN<input id="c_pin" type="password"/></label>
+          <button class="primary" id="create_user">追加</button>
+          <p class="muted" id="create_msg"></p>
+        </div>
+
+        <div class="card">
+          <h2>PIN再発行</h2>
+          <label>学籍番号<input id="r_student"/></label>
+          <label>新しいPIN<input id="r_pin" type="password"/></label>
+          <button id="reset_pin">再発行</button>
+          <p class="muted" id="reset_msg"></p>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2>強制退室（退室忘れ対応）</h2>
+        <label>学籍番号<input id="f_student"/></label>
+        <button class="danger" id="force_checkout">強制退室</button>
+        <p class="muted" id="force_msg"></p>
+      </div>
+
+      <div class="card">
+        <h2>ユーザー一覧</h2>
+        <button id="refresh_users">更新</button>
+        <table class="table" id="users_table">
+          <thead><tr><th>ID</th><th>学籍番号</th><th>氏名</th><th>表示名</th><th>作成</th></tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <script src="/static/admin.js"></script>
+</body>
+</html>

@@ -1,0 +1,70 @@
+:root{
+  --bg:#0b0d10;
+  --card:#141822;
+  --text:#e8edf6;
+  --muted:#aab3c2;
+  --line:#2a3142;
+  --primary:#4b7cff;
+  --danger:#ff4b5c;
+}
+*{box-sizing:border-box}
+body{
+  margin:0;
+  font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial;
+  background: radial-gradient(1200px 800px at 20% 0%, #111a2b 0%, var(--bg) 60%);
+  color:var(--text);
+}
+a{color:var(--primary); text-decoration:none}
+a:hover{text-decoration:underline}
+.wrap{max-width:980px; margin:0 auto; padding:20px}
+.wrap.narrow{max-width:520px;}
+h1{margin:0 0 10px 0; font-size:28px}
+h2{margin:0 0 12px 0; font-size:18px}
+p{line-height:1.6}
+.muted{color:var(--muted)}
+small{color:var(--muted)}
+.card{
+  background: linear-gradient(180deg, rgba(255,255,255,0.05), rgba(255,255,255,0.02));
+  border:1px solid var(--line);
+  border-radius:16px;
+  padding:16px;
+  margin-top:14px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.25);
+}
+.row{display:flex; align-items:center}
+.between{justify-content:space-between}
+.gap{gap:10px}
+.grid2{display:grid; grid-template-columns:1fr 1fr; gap:14px}
+.grid4{display:grid; grid-template-columns:repeat(4, 1fr); gap:14px}
+@media (max-width:1000px){ .grid4{grid-template-columns:1fr 1fr} }
+@media (max-width:780px){ .grid2{grid-template-columns:1fr} .grid4{grid-template-columns:1fr} }
+
+label{display:block; margin:10px 0; font-size:14px}
+input, select{
+  width:100%;
+  padding:12px 12px;
+  border-radius:12px;
+  border:1px solid var(--line);
+  background:#0e121a;
+  color:var(--text);
+  outline:none;
+  font-size:16px;
+}
+button{
+  padding:11px 14px;
+  border-radius:12px;
+  border:1px solid var(--line);
+  background:#0e121a;
+  color:var(--text);
+  cursor:pointer;
+  font-size:16px;
+}
+button:hover{filter:brightness(1.08)}
+button.primary{background:var(--primary); border-color:transparent; color:white}
+button.danger{background:var(--danger); border-color:transparent; color:white}
+.big{font-size:32px; margin:0; font-weight:800}
+.bigbtn{min-width:120px; font-weight:800}
+.table{width:100%; border-collapse:collapse}
+.table th, .table td{border-bottom:1px solid var(--line); padding:10px 8px; text-align:left; font-size:14px}
+.msg{font-size:18px; font-weight:800}
+.chart{width:100%; height:auto; border:1px solid var(--line); border-radius:14px; background:#0e121a}

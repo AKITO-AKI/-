@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>個人ログイン</title>
+  <link rel="stylesheet" href="/static/style.css"/>
+</head>
+<body>
+  <div class="wrap narrow">
+    <header class="row between">
+      <h1>個人</h1>
+      <nav class="muted"><a href="/">ホーム</a></nav>
+    </header>
+
+    <div class="card">
+      <h2>ログイン</h2>
+      <label>学籍番号<input id="student_no" placeholder="例: 2026A001" autocomplete="off"/></label>
+      <label>PIN<input id="pin" type="password" placeholder="4桁〜" autocomplete="off"/></label>
+      <button class="primary" id="login">ログイン</button>
+      <p class="muted" id="msg"></p>
+    </div>
+
+    <p class="muted"><small>※個人ページでは、累計/期間内の自習時間、推移、順位と順位推移を確認できます。</small></p>
+  </div>
+
+  <script>
+  const msg = document.getElementById("msg");
+  document.getElementById("login").addEventListener("click", async () => {
+    msg.textContent = "通信中…";
+    const student_no = document.getElementById("student_no").value.trim();
+    const pin = document.getElementById("pin").value.trim();
+    const res = await fetch("/api/login", {
+      method: "POST",
+      headers: {"Content-Type": "application/json"},
+      body: JSON.stringify({student_no, pin})
+    });
+    const data = await res.json().catch(()=>({}));
+    if (!res.ok) {
+      msg.textContent = data.detail ?? "ログイン失敗";
+      return;
+    }
+    location.href = "/dashboard";
+  });
+  </script>
+</body>
+</html>

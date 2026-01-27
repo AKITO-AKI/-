@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>ダッシュボード</title>
+  <link rel="stylesheet" href="/static/style.css"/>
+</head>
+<body>
+  <div class="wrap">
+    <header class="row between">
+      <div>
+        <h1 id="title">ダッシュボード</h1>
+        <p class="muted">累計 / 期間内 / 推移 / 順位の推移</p>
+      </div>
+      <nav class="muted">
+        <a href="/">ホーム</a> · <a href="#" id="logout">ログアウト</a>
+      </nav>
+    </header>
+
+    <div class="grid4">
+      <div class="card"><h2>今日</h2><p class="big" id="t_today">-</p><p class="muted" id="r_today">-</p></div>
+      <div class="card"><h2>今週</h2><p class="big" id="t_week">-</p><p class="muted" id="r_week">-</p></div>
+      <div class="card"><h2>今月</h2><p class="big" id="t_month">-</p><p class="muted" id="r_month">-</p></div>
+      <div class="card"><h2>累計</h2><p class="big" id="t_all">-</p><p class="muted" id="r_all">-</p></div>
+    </div>
+
+    <div class="grid2">
+      <div class="card">
+        <h2>自習時間の推移（直近21日）</h2>
+        <canvas id="chart_time" width="900" height="260" class="chart"></canvas>
+        <p class="muted"><small>※毎日の合計（在室時間）</small></p>
+      </div>
+      <div class="card">
+        <h2>順位の推移（直近21日）</h2>
+        <canvas id="chart_rank" width="900" height="260" class="chart"></canvas>
+        <p class="muted"><small>※その日の合計時間での順位（1が最上位）</small></p>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>最近の入退室</h2>
+      <table class="table" id="table">
+        <thead><tr><th>入室</th><th>退室</th><th>時間</th><th>状態</th></tr></thead>
+        <tbody></tbody>
+      </table>
+    </div>
+  </div>
+
+  <script src="/static/dashboard.js"></script>
+</body>
+</html>

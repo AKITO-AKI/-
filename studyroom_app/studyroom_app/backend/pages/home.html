@@ -1,0 +1,110 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>自主室（入退室 + ランキング）</title>
+  <link rel="stylesheet" href="/static/style.css"/>
+</head>
+<body>
+  <div class="wrap wide">
+    <header class="topbar">
+      <div>
+        <h1 class="title">自主室</h1>
+        <p class="sub">入退室・ユーザー登録・ランキング（1台で運用OK）</p>
+      </div>
+      <nav class="nav">
+        <a href="/login">個人</a>
+        <a href="/admin">管理</a>
+      </nav>
+    </header>
+
+    <main class="split">
+      <!-- LEFT: actions -->
+      <section class="panel">
+        <div class="card">
+          <h2>入退室</h2>
+          <div class="form2">
+            <label>学籍番号
+              <input id="student" placeholder="例: 2026A001" autocomplete="off"/>
+            </label>
+            <label>PIN
+              <input id="pin" type="password" placeholder="4桁〜" autocomplete="off"/>
+            </label>
+          </div>
+
+          <div class="btnrow">
+            <button class="btn btn-solid btn-xl" id="btn_in">入室</button>
+            <button class="btn btn-outline btn-xl" id="btn_out">退室</button>
+          </div>
+
+          <p id="msg" class="msg muted">ここに結果が表示されます</p>
+          <p class="note">※PINは周りから見えないように。打刻後は自動でランキングが更新されます。</p>
+        </div>
+
+        <div class="card">
+          <h2>ユーザー登録（初回すぐ使える）</h2>
+          <div class="form2">
+            <label>学籍番号
+              <input id="su_student" placeholder="例: 2026A001" autocomplete="off"/>
+            </label>
+            <label>氏名
+              <input id="su_name" placeholder="例: 山田 太郎" autocomplete="off"/>
+            </label>
+            <label>表示名（ランキング）
+              <input id="su_nick" placeholder="例: Taro" autocomplete="off"/>
+            </label>
+            <label>初期PIN
+              <input id="su_pin" type="password" placeholder="4桁〜" autocomplete="off"/>
+            </label>
+          </div>
+
+          <details class="details">
+            <summary>登録コードを使う（推奨）</summary>
+            <p class="note">安全のため、運用では登録コード（環境変数 STUDYROOM_SIGNUP_CODE）を設定するのがおすすめ。</p>
+            <label>登録コード
+              <input id="su_code" placeholder="（設定している場合のみ必要）" autocomplete="off"/>
+            </label>
+          </details>
+
+          <div class="btnrow">
+            <button class="btn btn-solid" id="btn_signup">登録する</button>
+          </div>
+          <p id="signup_msg" class="msg muted">ここに結果が表示されます</p>
+        </div>
+      </section>
+
+      <!-- RIGHT: leaderboard -->
+      <section class="panel">
+        <div class="card">
+          <div class="row between">
+            <h2 style="margin:0;">ランキング（上位）</h2>
+            <div class="row gap">
+              <select id="range">
+                <option value="today">今日</option>
+                <option value="week">今週</option>
+                <option value="month">今月</option>
+              </select>
+              <button class="btn btn-outline" id="refresh">更新</button>
+            </div>
+          </div>
+          <p class="muted" id="meta" style="margin:10px 0 0;">—</p>
+          <table class="table" id="table" style="margin-top:10px;">
+            <thead>
+              <tr><th>#</th><th>表示名</th><th>時間</th></tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+          <p class="note">モチベ用。辛くなるなら「上位のみ表示」を維持しつつ、個人ページは“推移”中心にすると良い。</p>
+        </div>
+      </section>
+    </main>
+
+    <footer class="footer">
+      <small>個人の累計 / 期間内 / 推移 / 順位推移 → <a href="/login">個人ページ</a></small>
+    </footer>
+  </div>
+
+  <script src="/static/home.js"></script>
+</body>
+</html>
