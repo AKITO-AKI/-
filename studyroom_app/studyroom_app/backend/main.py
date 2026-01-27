@@ -469,9 +469,16 @@ def admin_login(req: AdminLoginReq, response: Response):
 # =========================================================
 # Routes: Check-in/out
 # =========================================================
+
 @app.post("/api/checkin")
 def checkin(req: CheckReq):
-    user = _verify_user(req.student_no, req.pin)
+    try:
+        user = _verify_user(req.student_no, req.pin)
+    except HTTPException as e:
+        if e.status_code == 401:
+            # 未登録またはPIN違い
+            raise HTTPException(status_code=401, detail="未登録の学籍番号です。個人ページで初回登録を行ってください。\n→ /signup")
+        raise
     conn = db_connect()
     cur = conn.cursor()
 
@@ -489,9 +496,15 @@ def checkin(req: CheckReq):
     conn.close()
     return {"ok": True, "message": f"{user['nickname']} 入室: {t.strftime('%H:%M:%S')}"}
 
+
 @app.post("/api/checkout")
 def checkout(req: CheckReq):
-    user = _verify_user(req.student_no, req.pin)
+    try:
+        user = _verify_user(req.student_no, req.pin)
+    except HTTPException as e:
+        if e.status_code == 401:
+            raise HTTPException(status_code=401, detail="未登録の学籍番号です。個人ページで初回登録を行ってください。\n→ /signup")
+        raise
     conn = db_connect()
     cur = conn.cursor()
 
