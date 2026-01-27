@@ -3,46 +3,46 @@
 <head>
   <meta charset="utf-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
-  <title>個人ログイン</title>
+  <title>初回登録 | 個人ページ</title>
   <link rel="stylesheet" href="/static/style.css"/>
 </head>
 <body>
   <div class="wrap narrow">
     <header class="row between">
-      <h1>個人</h1>
+      <h1>初回登録</h1>
       <nav class="muted"><a href="/">ホーム</a></nav>
     </header>
-
-
     <div class="card">
-      <h2>ログイン</h2>
+      <h2>新規ユーザー登録</h2>
       <label>学籍番号<input id="student_no" placeholder="例: 2026A001" autocomplete="off"/></label>
+      <label>氏名<input id="name" placeholder="例: 山田 太郎" autocomplete="off"/></label>
+      <label>ニックネーム<input id="nickname" placeholder="例: たろう" autocomplete="off"/></label>
       <label>PIN<input id="pin" type="password" placeholder="4桁〜" autocomplete="off"/></label>
-      <button class="primary" id="login">ログイン</button>
+      <button class="primary" id="signup">登録</button>
       <p class="muted" id="msg"></p>
-      <p style="margin-top:1em"><a href="/signup">初回登録はこちら</a></p>
     </div>
-
-    <p class="muted"><small>※個人ページでは、累計/期間内の自習時間、推移、順位と順位推移を確認できます。</small></p>
+    <p class="muted"><small>※登録後はログイン画面から個人ページにアクセスできます。</small></p>
   </div>
-
   <script>
   const msg = document.getElementById("msg");
-  document.getElementById("login").addEventListener("click", async () => {
+  document.getElementById("signup").addEventListener("click", async () => {
     msg.textContent = "通信中…";
     const student_no = document.getElementById("student_no").value.trim();
+    const name = document.getElementById("name").value.trim();
+    const nickname = document.getElementById("nickname").value.trim();
     const pin = document.getElementById("pin").value.trim();
-    const res = await fetch("/api/login", {
+    const res = await fetch("/api/signup", {
       method: "POST",
       headers: {"Content-Type": "application/json"},
-      body: JSON.stringify({student_no, pin})
+      body: JSON.stringify({student_no, name, nickname, pin})
     });
     const data = await res.json().catch(()=>({}));
     if (!res.ok) {
-      msg.textContent = data.detail ?? "ログイン失敗";
+      msg.textContent = data.detail ?? "登録失敗";
       return;
     }
-    location.href = "/dashboard";
+    msg.textContent = "登録が完了しました。ログイン画面へ移動します…";
+    setTimeout(()=>{ location.href = "/login"; }, 1500);
   });
   </script>
 </body>

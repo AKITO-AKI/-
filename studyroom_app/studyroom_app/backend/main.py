@@ -397,9 +397,15 @@ def home():
 def leaderboard_page():
     return _html_file("leaderboard.html")
 
+
 @app.get("/login", response_class=HTMLResponse)
 def login_page():
     return _html_file("login.html")
+
+# 初回登録ページ
+@app.get("/signup", response_class=HTMLResponse)
+def signup_page():
+    return _html_file("signup.html")
 
 @app.get("/dashboard", response_class=HTMLResponse)
 def dashboard_page():
