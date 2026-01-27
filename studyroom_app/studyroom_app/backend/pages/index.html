@@ -26,10 +26,12 @@
           <h2>入退室</h2>
           <div class="form2">
             <label>学籍番号
-              <input id="student" placeholder="例: 2026A001" autocomplete="off"/>
+              <input id="student" placeholder="例: 2026A001" autocomplete="off" style="width:calc(100% - 120px);display:inline-block;"/>
+              <!-- 前回値呼び出しボタンはJSで追加 -->
             </label>
             <label>PIN
               <input id="pin" type="password" placeholder="4桁〜" autocomplete="off"/>
+              <span class="muted" style="font-size:12px;">（入力後自動クリア）</span>
             </label>
           </div>
 

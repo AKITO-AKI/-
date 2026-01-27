@@ -1,3 +1,21 @@
+# 入退室状態確認API
+from fastapi import Body
+
+@app.post("/api/status")
+def status_check(data: dict = Body(...)):
+    student_no = data.get("student_no", "").strip()
+    pin = data.get("pin", "").strip()
+    try:
+        user = _verify_user(student_no, pin)
+    except HTTPException:
+        return {"status": "unknown"}
+    conn = db_connect()
+    open_sess = _open_session(conn, int(user["id"]))
+    conn.close()
+    if open_sess:
+        return {"status": "in"}
+    else:
+        return {"status": "out"}
 \
 from __future__ import annotations
 

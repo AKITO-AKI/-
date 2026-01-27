@@ -48,15 +48,79 @@ async function loadLeaderboard(){
   });
 }
 
+
+// --- 入力補助・整形 ---
+const studentInput = document.getElementById("student");
+const pinInput = document.getElementById("pin");
+
+// 学籍番号自動整形（大文字化・全角→半角・空白除去）
+studentInput.addEventListener("input", e => {
+  let v = studentInput.value;
+  v = v.replace(/[Ａ-Ｚａ-ｚ０-９]/g, s => String.fromCharCode(s.charCodeAt(0) - 0xFEE0)); // 全角→半角
+  v = v.toUpperCase().replace(/[^A-Z0-9]/g, "");
+  studentInput.value = v;
+});
+
+// PIN入力後自動クリア
+pinInput.addEventListener("input", e => {
+  if(pinInput.value.length >= 4) setTimeout(()=>{ pinInput.value = ""; }, 1000);
+});
+
+// 前回値保持・ワンクリック呼び出し
+const LAST_KEY = "studyroom_last_student";
+studentInput.addEventListener("change", ()=>{
+  if(studentInput.value.length >= 6) localStorage.setItem(LAST_KEY, studentInput.value);
+});
+const recallBtn = document.createElement("button");
+recallBtn.textContent = "前回入力を呼び出し";
+recallBtn.className = "btn btn-outline btn-sm";
+recallBtn.style.marginLeft = "8px";
+studentInput.parentNode.appendChild(recallBtn);
+recallBtn.addEventListener("click", ()=>{
+  const v = localStorage.getItem(LAST_KEY)||"";
+  if(v) studentInput.value = v;
+  studentInput.focus();
+});
+
+// 入室中状態表示・ガード
+let isIn = false;
+async function checkStatus(student_no, pin) {
+  // APIで入室中か確認
+  try {
+    const res = await fetch("/api/status", {
+      method: "POST",
+      headers: {"Content-Type": "application/json"},
+      body: JSON.stringify({student_no, pin})
+    });
+    const data = await res.json().catch(()=>({}));
+    if(res.ok && data.status === "in") return true;
+  } catch {}
+  return false;
+}
+
 async function doCheck(kind){
   showMsg(msg, "通信中…");
   try{
-    const student_no = document.getElementById("student").value.trim();
-    const pin = document.getElementById("pin").value.trim();
+    const student_no = studentInput.value.trim();
+    const pin = pinInput.value.trim();
+    // 入室時は入室中なら退室を促す
+    if(kind==="in"){
+      if(await checkStatus(student_no, pin)){
+        showMsg(msg, "すでに入室中です。退室を先に行ってください。", true);
+        return;
+      }
+    }
+    // 退室時は未入室ならガード
+    if(kind==="out"){
+      if(!(await checkStatus(student_no, pin))){
+        showMsg(msg, "入室記録がありません。先に入室してください。", true);
+        return;
+      }
+    }
     const url = kind === "in" ? "/api/checkin" : "/api/checkout";
     const data = await post(url, {student_no, pin});
     showMsg(msg, data.message);
-    document.getElementById("pin").value = "";
+    pinInput.value = "";
     await loadLeaderboard();
   }catch(e){
     showMsg(msg, e.message, true);
