@@ -1,3 +1,34 @@
+async function refreshActive(){
+  const tbody = document.querySelector("#active_table tbody");
+  const msg = document.getElementById("active_msg");
+  tbody.innerHTML = "";
+  msg.textContent = "通信中…";
+  try{
+    const data = await get("/api/admin/active_sessions");
+    data.sessions.forEach(s => {
+      const tr = document.createElement("tr");
+      tr.innerHTML = `<td>${s.student_no}</td><td>${s.name}</td><td>${s.nickname}</td><td>${s.checkin_at.replace('T',' ').slice(0,16)}</td>`;
+      tbody.appendChild(tr);
+    });
+    msg.textContent = `現在入室中: ${data.sessions.length}人`;
+  }catch(e){
+    msg.textContent = e.message;
+  }
+}
+
+document.getElementById("refresh_active").addEventListener("click", refreshActive);
+
+document.getElementById("force_checkout_all").addEventListener("click", async ()=>{
+  const msg = document.getElementById("active_msg");
+  msg.textContent = "通信中…";
+  try{
+    const data = await post("/api/admin/force_checkout_all", {});
+    msg.textContent = `全員強制退室しました（${data.count}件）`;
+    await refreshActive();
+  }catch(e){
+    msg.textContent = e.message;
+  }
+});
 const loginCard = document.getElementById("login_card");
 const adminArea = document.getElementById("admin_area");
 

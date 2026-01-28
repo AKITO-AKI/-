@@ -130,7 +130,28 @@ async function load(){
   data.sessions.forEach(s=>{
     const tr = document.createElement("tr");
     const st = s.is_active ? "入室中" : "完了";
-    const dur = s.is_active ? "—" : fmt(s.duration_sec);
+    let dur = s.is_active ? "—" : fmt(s.duration_sec);
+    // 日跨ぎ内訳表示
+    if(!s.is_active && s.checkin_at && s.checkout_at){
+      const ci = new Date(s.checkin_at);
+      const co = new Date(s.checkout_at);
+      if(ci.toDateString() !== co.toDateString()){
+        // 日付が異なる場合、日ごとの内訳を計算
+        let parts = [];
+        let d = new Date(ci);
+        let remain = s.duration_sec;
+        while(d < co){
+          let next = new Date(d);
+          next.setHours(24,0,0,0);
+          let end = next < co ? next : co;
+          let sec = Math.floor((end-d)/1000);
+          parts.push(`${d.toLocaleDateString()}：${fmt(sec)}`);
+          remain -= sec;
+          d = end;
+        }
+        dur += `<br><span style='font-size:12px;color:#888;'>${parts.join('<br>')}</span>`;
+      }
+    }
     tr.innerHTML = `<td>${s.checkin_at}</td><td>${s.checkout_at ?? "—"}</td><td>${dur}</td><td>${st}</td>`;
     tbody.appendChild(tr);
   });

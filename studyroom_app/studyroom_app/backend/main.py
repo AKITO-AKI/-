@@ -1,3 +1,35 @@
+# 現在入室中リスト取得API
+@app.get("/api/admin/active_sessions")
+def admin_active_sessions(request: Request, _: Dict[str, Any] = Depends(require_admin)):
+    conn = db_connect()
+    cur = conn.cursor()
+    cur.execute("""
+        SELECT s.id, u.student_no, u.name, u.nickname, s.checkin_at
+        FROM sessions s
+        JOIN users u ON u.id = s.user_id
+        WHERE s.checkout_at IS NULL
+        ORDER BY s.checkin_at ASC
+    """)
+    sessions = [dict(r) for r in cur.fetchall()]
+    conn.close()
+    return {"ok": True, "sessions": sessions}
+
+# 一括強制退室API
+@app.post("/api/admin/force_checkout_all")
+def admin_force_checkout_all(request: Request, _: Dict[str, Any] = Depends(require_admin)):
+    conn = db_connect()
+    cur = conn.cursor()
+    cur.execute("SELECT id, checkin_at FROM sessions WHERE checkout_at IS NULL")
+    now = now_jst()
+    count = 0
+    for s in cur.fetchall():
+        ci = parse_iso(s["checkin_at"])
+        dur = max(0, int((now - ci).total_seconds()))
+        cur.execute("UPDATE sessions SET checkout_at=?, duration_sec=? WHERE id=?", (iso(now), dur, int(s["id"])))
+        count += 1
+    conn.commit()
+    conn.close()
+    return {"ok": True, "count": count}
 # 入退室状態確認API
 from fastapi import Body
 
@@ -40,9 +72,14 @@ JST = timezone(timedelta(hours=9))
 def now_jst() -> datetime:
     return datetime.now(tz=JST)
 
+
 SECRET_KEY = os.getenv("STUDYROOM_SECRET_KEY") or secrets.token_urlsafe(32)
 ADMIN_PASSWORD = os.getenv("STUDYROOM_ADMIN_PASSWORD") or "change-me"
 DB_PATH = os.getenv("STUDYROOM_DB_PATH") or os.path.join(os.path.dirname(__file__), "studyroom.sqlite3")
+
+# 閉室時刻（例: "22:00"）と自動退室ON/OFF
+CLOSE_TIME = os.getenv("STUDYROOM_CLOSE_TIME", "22:00")
+AUTO_CHECKOUT = os.getenv("STUDYROOM_AUTO_CHECKOUT", "1") == "1"
 
 serializer = URLSafeSerializer(SECRET_KEY, salt="studyroom-session")
 pwd_ctx = CryptContext(schemes=["bcrypt"], deprecated="auto")
@@ -183,9 +220,35 @@ BASE_DIR = os.path.dirname(__file__)
 app.mount("/static", StaticFiles(directory=os.path.join(BASE_DIR, "static")), name="static")
 app.mount("/pages", StaticFiles(directory=os.path.join(BASE_DIR, "pages")), name="pages")
 
+
+import threading
+import time as pytime
+
+def auto_checkout_loop():
+    while True:
+        if not AUTO_CHECKOUT:
+            pytime.sleep(60)
+            continue
+        now = now_jst()
+        h, m = map(int, CLOSE_TIME.split(":"))
+        close_dt = now.replace(hour=h, minute=m, second=0, microsecond=0)
+        # 閉室時刻を過ぎていたら自動退室
+        if now > close_dt:
+            conn = db_connect()
+            cur = conn.cursor()
+            cur.execute("SELECT s.id, s.user_id, s.checkin_at FROM sessions s WHERE s.checkout_at IS NULL")
+            for s in cur.fetchall():
+                ci = parse_iso(s["checkin_at"])
+                dur = max(0, int((close_dt - ci).total_seconds()))
+                cur.execute("UPDATE sessions SET checkout_at=?, duration_sec=? WHERE id=?", (iso(close_dt), dur, int(s["id"])))
+            conn.commit()
+            conn.close()
+        pytime.sleep(60)
+
 @app.on_event("startup")
 def _startup():
     init_db()
+    threading.Thread(target=auto_checkout_loop, daemon=True).start()
 
 # =========================================================
 # Core helpers
