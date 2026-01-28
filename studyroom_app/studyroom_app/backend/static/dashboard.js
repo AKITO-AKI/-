@@ -105,6 +105,7 @@ function drawLineChart(canvas, labels, values, opts={}){
   }
 }
 
+
 async function load(){
   const res = await fetch("/api/me");
   const data = await res.json().catch(()=>({}));
@@ -114,6 +115,26 @@ async function load(){
   }
 
   title.textContent = `ダッシュボード（${data.user.nickname}）`;
+
+
+  // バッジ・称号
+  const badges = [];
+  if(data.streak >= 2) badges.push(`🔥 連続${data.streak}日`);
+  if(data.best_sec >= 60*60*3) badges.push(`🏅 自己ベスト ${fmt(data.best_sec)}`);
+  if(badges.length === 0) badges.push("—");
+  document.getElementById("badges").innerHTML = badges.join("<br>");
+
+  // 週目標進捗
+  const goal = data.weekly_goal;
+  const progress = data.week_progress;
+  const nowmin = Math.floor((data.totals.week||0)/60);
+  const goalmin = goal;
+  document.getElementById("goalbar").innerHTML = `
+    <div style='background:#eee;width:100%;height:18px;border-radius:8px;overflow:hidden;'>
+      <div style='background:#4ade80;height:100%;width:${progress}%;transition:width .5s;'></div>
+    </div>
+    <div style='font-size:13px;margin-top:4px;'>${nowmin}分 / 目標${goalmin}分（${progress}%）</div>
+  `;
 
   t_today.textContent = fmt(data.totals.today);
   t_week.textContent = fmt(data.totals.week);

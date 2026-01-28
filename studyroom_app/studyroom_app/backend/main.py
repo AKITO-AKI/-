@@ -92,10 +92,12 @@ def db_connect() -> sqlite3.Connection:
     conn.row_factory = sqlite3.Row
     return conn
 
+
 def init_db() -> None:
     conn = db_connect()
     cur = conn.cursor()
 
+    # 週目標（分単位）カラム追加
     cur.execute("""
     CREATE TABLE IF NOT EXISTS users (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -103,9 +105,15 @@ def init_db() -> None:
         name TEXT NOT NULL,
         nickname TEXT NOT NULL,
         pin_hash TEXT NOT NULL,
-        created_at TEXT NOT NULL
+        created_at TEXT NOT NULL,
+        weekly_goal INTEGER DEFAULT 300 # 300分=5時間
     );
     """)
+    # 既存DBにカラムがなければ追加
+    try:
+        cur.execute("ALTER TABLE users ADD COLUMN weekly_goal INTEGER DEFAULT 300")
+    except Exception:
+        pass
 
     cur.execute("""
     CREATE TABLE IF NOT EXISTS sessions (
@@ -646,7 +654,7 @@ def me(request: Request, sess: Dict[str, Any] = Depends(require_user)):
     conn = db_connect()
     cur = conn.cursor()
 
-    cur.execute("SELECT id, student_no, name, nickname, created_at FROM users WHERE id = ?", (user_id,))
+    cur.execute("SELECT id, student_no, name, nickname, created_at, weekly_goal FROM users WHERE id = ?", (user_id,))
     user = cur.fetchone()
     if not user:
         conn.close()
@@ -674,12 +682,18 @@ def me(request: Request, sess: Dict[str, Any] = Depends(require_user)):
     totals_out: Dict[str, int] = {}
     ranks_out: Dict[str, Any] = {}
 
+
     for rn in ["today", "week", "month"]:
         start, end = _range_start_end(rn)  # type: ignore[arg-type]
         totals = _compute_totals_in_range(conn, start, end)
         my = int(totals.get(user_id, {}).get("total_sec", 0))
         totals_out[rn] = my
         ranks_out[rn] = _rank_of_user(totals, user_id)
+
+    # 週目標進捗
+    weekly_goal = user["weekly_goal"] if user["weekly_goal"] is not None else 300
+    week_sec = totals_out["week"]
+    week_progress = min(100, int(week_sec / (weekly_goal*60) * 100))
 
     totals_out["all"] = _all_time_total_sec(conn, user_id)
     # all-time rank (optional)
@@ -701,6 +715,18 @@ def me(request: Request, sess: Dict[str, Any] = Depends(require_user)):
         cum += int(it["sec"])
         cum_series.append({"date": it["date"], "cum_sec": cum})
 
+
+    # 連続日数（直近21日で連続して自習した日数）
+    streak = 0
+    for it in reversed(series):
+        if it["sec"] > 0:
+            streak += 1
+        else:
+            break
+
+    # 自己ベスト（1日最大時間）
+    best_sec = max((it["sec"] for it in series), default=0)
+
     conn.close()
 
     return {
@@ -711,6 +737,10 @@ def me(request: Request, sess: Dict[str, Any] = Depends(require_user)):
         "daily": series,                 # per day: sec + rank
         "daily_cum": cum_series,         # per day: cumulative seconds in window
         "sessions": sessions,
+        "streak": streak,
+        "best_sec": best_sec,
+        "weekly_goal": weekly_goal,
+        "week_progress": week_progress
     }
 
 # =========================================================
