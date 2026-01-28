@@ -16,13 +16,20 @@
     </header>
 
     <div class="row gap">
-      <select id="range">
-        <option value="today">今日</option>
-        <option value="week">今週</option>
-        <option value="month">今月</option>
-      </select>
-      <button id="refresh">更新</button>
-      <span class="muted" id="meta"></span>
+        <select id="range">
+          <option value="today">今日</option>
+          <option value="week">今週</option>
+          <option value="month">今月</option>
+        </select>
+        <select id="viewmode">
+          <option value="top">上位のみ</option>
+          <option value="all">全体</option>
+        </select>
+        <label class="muted" style="display:flex;align-items:center;gap:4px;">
+          <input type="checkbox" id="anonmode" style="margin:0;"> 匿名
+        </label>
+        <button id="refresh">更新</button>
+        <span class="muted" id="meta"></span>
     </div>
 
     <div class="card">
